@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Electica Autobidder: Mission Control</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React Libraries -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX Transpilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Google Fonts: Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Apply Space Grotesk font globally */
+        body, #root {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- React Application Code ---
+        
+        // --- ICONS (SVG Paths) ---
+        const ICONS = {
+            dashboard: "M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z",
+            map: "M20.5 3l-6.5 18-3.5-7L1 10.5 20.5 3z",
+            assets: "M17 1H7c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14zM8 6h8v2H8z",
+            grid: "M20 5H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zM4 17V7h16v10H4zm9-9h-2v8h2V8zm4 0h-2v8h2V8zM7 8H5v8h2V8z",
+            strategy: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z",
+            reports: "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z",
+            logout: "M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z",
+            up: "M7 14l5-5 5 5H7z",
+            down: "M7 10l5 5 5-5H7z",
+            bolt: "M7 2v11h3v9l7-12h-4l4-8z",
+            home: "M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z",
+            business: "M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V7h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V7h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z",
+            factory: "M2 22h20V10l-2-2h-3V3H7v5H4l-2 2v12zM12 5h4v3h-4V5z",
+            sparkles: "M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25zm-7 11l-1.25-2.75L8 16l2.75-1.25L12 12l1.25 2.75L16 16l-2.75 1.25z",
+            close: "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z",
+        };
+
+        const Icon = ({ path, className = "w-6 h-6" }) => (<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}><path d={path} /></svg>);
+
+        // --- DYNAMIC DATA INITIALIZATION ---
+        const initializeAssets = () => {
+            const generate = (count, type) => {
+                const statuses = ['Discharging (V2G)', 'Discharging (V2G)', 'Grid Support', 'Idle', 'Smart Charging'];
+                const locations = { Home: [{ n: 'Kalyan Nagar', lat: 22.75, lng: 75.89 }, { n: 'Vijay Nagar', lat: 22.75, lng: 75.89 }], Com: [{ n: 'Phoenix Citadel', lat: 22.70, lng: 75.90 }, { n: 'C21 Mall', lat: 22.74, lng: 75.89 }], Ind: [{ n: 'Pithampur SEZ', lat: 22.61, lng: 75.68 }, { n: 'Sanwer Ind.', lat: 22.97, lng: 75.82 }] };
+                let assets = [];
+                for (let i = 1; i <= count; i++) {
+                    const loc = locations[type][Math.floor(Math.random() * locations[type].length)];
+                    let max_capacity_kwh;
+                    if (type === 'Home') max_capacity_kwh = Math.floor(Math.random() * (199 - 5 + 1)) + 5;
+                    else if (type === 'Com') max_capacity_kwh = Math.floor(Math.random() * (999 - 200 + 1)) + 200;
+                    else max_capacity_kwh = Math.floor(Math.random() * (5000 - 1000 + 1)) + 1000;
+                    
+                    const status = statuses[Math.floor(Math.random() * statuses.length)];
+                    const soc_percent = Math.floor(Math.random() * 50) + 40;
+                    
+                    assets.push({ 
+                        id: `ELEC-${type.slice(0,1)}${8000 + i}`, 
+                        type: {Home: 'Homeowner', Com: 'Commercial', Ind: 'Industrial'}[type], 
+                        loc: loc.n, 
+                        lat: loc.lat + (Math.random() - 0.5) * 0.02, 
+                        lng: loc.lng + (Math.random() - 0.5) * 0.02, 
+                        status, 
+                        soc: soc_percent,
+                        max_capacity_kwh,
+                        current_energy_kwh: max_capacity_kwh * (soc_percent / 100),
+                        power_kw: status.includes('Idle') ? 0 : (max_capacity_kwh * (0.08 + Math.random() * 0.05)), 
+                        uptime: 95 + Math.random() * 5, 
+                        cycles: Math.floor(Math.random() * 3) + 1 
+                    });
+                }
+                return assets;
+            };
+            return { homeowner: generate(25, 'Home'), commercial: generate(10, 'Com'), industrial: generate(4, 'Ind') };
+        };
+        
+        // --- Main Application ---
+        function App() {
+            const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+            const [activePage, setActivePage] = React.useState('Dashboard');
+            const [time, setTime] = React.useState(new Date('2025-09-22T21:00:00+05:30'));
+            const [assets, setAssets] = React.useState(initializeAssets());
+            const [gridDemand, setGridDemand] = React.useState(3285);
+            const [market, setMarket] = React.useState({ rtm: 6.25, acp: 6.18, volume: 450, fcas_rate: 0.50 }); // FCAS rate in ₹/kWh
+            
+            const totalBatteryPower = React.useMemo(() => {
+                const allAssets = [...assets.homeowner, ...assets.commercial, ...assets.industrial];
+                return allAssets.filter(a => a.status.includes('Discharging')).reduce((sum, a) => sum + a.power_kw, 0) / 1000;
+            }, [assets]);
+            
+            const gridBalance = totalBatteryPower - gridDemand;
+            const gridStatus = gridBalance >= 0 ? 'SURPLUS' : 'DEFICIT';
+
+            React.useEffect(() => {
+                const timeTicker = setInterval(() => setTime(prev => new Date(prev.getTime() + 1000)), 1000);
+                const gridTicker = setInterval(() => setGridDemand(p => p + (Math.random() - 0.5) * 15), 1000);
+                const marketTicker = setInterval(() => setMarket(p => ({ ...p, rtm: p.rtm + (Math.random() - 0.5) * 0.05, acp: p.acp + (Math.random() - 0.5) * 0.05, volume: p.volume + (Math.random() - 0.5) * 5 })), 1000);
+                const assetUpdater = setInterval(() => {
+                    setAssets(prevAssets => {
+                        const updateAsset = asset => {
+                            let new_energy_kwh = asset.current_energy_kwh;
+                            const energy_change_per_second = asset.power_kw / 3600;
+
+                            if (asset.status.includes('Discharging')) {
+                                new_energy_kwh = Math.max(0, asset.current_energy_kwh - energy_change_per_second);
+                            } else if (asset.status.includes('Charging')) {
+                                new_energy_kwh = Math.min(asset.max_capacity_kwh, asset.current_energy_kwh + energy_change_per_second);
+                            } else if (asset.status.includes('Support')) {
+                                new_energy_kwh = Math.max(0, asset.current_energy_kwh - (energy_change_per_second * 0.05)); // Minimal standby drain
+                            }
+                            const new_soc = (new_energy_kwh / asset.max_capacity_kwh) * 100;
+
+                            return { ...asset, current_energy_kwh: new_energy_kwh, soc: new_soc };
+                        };
+                        return { homeowner: prevAssets.homeowner.map(updateAsset), commercial: prevAssets.commercial.map(updateAsset), industrial: prevAssets.industrial.map(updateAsset) };
+                    });
+                }, 1000);
+                return () => { clearInterval(timeTicker); clearInterval(assetUpdater); clearInterval(gridTicker); clearInterval(marketTicker);};
+            }, []);
+
+            const handleLogin = () => setIsAuthenticated(true);
+            const handleLogout = () => setIsAuthenticated(false);
+
+            if (!isAuthenticated) {
+                return <LoginScreen onLoginSuccess={handleLogin} />;
+            }
+
+            const renderPage = () => {
+                switch (activePage) {
+                    case 'Dashboard': return <DashboardView assets={assets} gridDemand={gridDemand} gridStatus={gridStatus} gridBalance={gridBalance} totalBatteryPower={totalBatteryPower} market={market} />;
+                    case 'Grid Services': return <GridServicesView assets={assets} gridStatus={gridStatus} market={market} />;
+                    case 'Assets': return <AssetsView assets={assets} />;
+                    case 'Map': return <MapView assets={assets} />;
+                    case 'Strategy': return <StrategyView />;
+                    case 'Reports': return <ReportsView assets={assets} totalBatteryPower={totalBatteryPower} market={market} gridDemand={gridDemand} gridStatus={gridStatus} />;
+                    default: return <DashboardView assets={assets} />;
+                }
+            };
+            
+            return (<div className="bg-black text-gray-300 font-space-grotesk flex h-screen overflow-hidden"><Sidebar activePage={activePage} setActivePage={setActivePage} onLogout={handleLogout} /><main className="flex-1 flex flex-col"><Header currentTime={time} /><div className="flex-1 p-4 md:p-6 overflow-y-auto">{renderPage()}</div></main></div>);
+        }
+
+        // --- Login Screen ---
+        function LoginScreen({ onLoginSuccess }) {
+            const [username, setUsername] = React.useState('');
+            const [password, setPassword] = React.useState('');
+            const [error, setError] = React.useState('');
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (username === 'a' && password === 'a') {
+                    setError('');
+                    onLoginSuccess();
+                } else {
+                    setError('Invalid username or password.');
+                }
+            };
+
+            return (<>
+                <div className="bg-black text-gray-300 font-space-grotesk flex items-center justify-center h-screen">
+                    <div className="w-full max-w-md p-8 space-y-8 bg-gray-900/50 border border-[#69F9D6]/20 rounded-lg shadow-2xl">
+                        <div className="text-center">
+                            <img src="Logo -02.png" alt="Electica Logo" className="w-96 mx-auto mb-4" />
+                            <h2 className="text-2xl font-bold text-white">Mission Control Access</h2>
+                        </div>
+                        <form className="space-y-6" onSubmit={handleSubmit}>
+                            <div className="relative"><input value={username} onChange={e=>setUsername(e.target.value)} placeholder="Username" type="text" className="peer w-full bg-black border border-gray-700 rounded-md h-10 px-4 text-sm outline-none focus:border-[#69F9D6]"/></div>
+                             <div className="relative"><input value={password} onChange={e=>setPassword(e.target.value)} placeholder="Password" type="password" className="peer w-full bg-black border border-gray-700 rounded-md h-10 px-4 text-sm outline-none focus:border-[#69F9D6]"/></div>
+                            {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+                            <button type="submit" className="w-full bg-[#69F9D6] text-black font-bold py-2 px-4 rounded-lg hover:bg-white transition-colors duration-300">Login</button>
+                        </form>
+                    </div>
+                </div>
+            </>);
+        }
+
+        // --- Layout Components ---
+        function Sidebar({ activePage, setActivePage, onLogout }) { const n=['Dashboard','Grid Services','Assets','Map','Strategy','Reports'];return(<aside className="bg-black w-20 lg:w-64 flex flex-col border-r border-[#69F9D6]/20"><a href="https://www.electica.in/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center lg:justify-start lg:pl-6 h-20 border-b border-[#69F9D6]/20"><img src="Logo -02.png" alt="Electica Logo" className="h-16 w-auto"/></a><nav className="flex-1 px-2 lg:px-4 py-6 space-y-2">{n.map(i=>(<NavItem key={i} label={i} icon={ICONS[i.toLowerCase().replace(' ','')]} isActive={activePage===i} onClick={()=>setActivePage(i)}/>))}</nav><div className="px-2 lg:px-4 py-6 border-t border-[#69F9D6]/20"><NavItem label="Logout" icon={ICONS.logout} onClick={onLogout} /></div></aside>); }
+        function NavItem({ label, icon, isActive, onClick = () => {} }) { return(<a href="#" onClick={e=>{e.preventDefault();onClick();}} className={`flex items-center justify-center lg:justify-start p-3 rounded-lg transition-all duration-200 ease-in-out group ${isActive?'bg-[#69F9D6]/10 text-[#69F9D6]':'text-gray-400 hover:bg-gray-800 hover:text-white'}`}><Icon path={icon} className="w-6 h-6"/><span className="hidden lg:block ml-4 font-medium">{label}</span></a>); }
+        function Header({ currentTime }) { const t=currentTime.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Asia/Kolkata'});const d=currentTime.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Kolkata'});return(<header className="flex-shrink-0 bg-black/80 backdrop-blur-sm flex justify-between items-center h-20 px-6 border-b border-[#69F9D6]/20"><div><h2 className="text-xl font-semibold text-white">Mission Control</h2><p className="text-xs text-gray-500">Indore, Madhya Pradesh, India</p></div><div className="flex items-center space-x-6"><div className="text-right"><p className="font-mono text-lg text-white">{t} IST</p><p className="text-xs text-gray-500">{d}</p></div><div className="flex items-center space-x-2 px-3 py-1 bg-[#39FF14]/10 border border-[#39FF14]/30 rounded-full"><div className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#39FF14] opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-[#39FF14]"></span></div><span className="font-semibold text-sm text-[#39FF14]">SYSTEM ONLINE</span></div></div></header>); }
+
+        // --- Page Views ---
+        function DashboardView({ assets, gridDemand, gridStatus, gridBalance, totalBatteryPower, market }) {
+            const getDispatchPower = (assetList) => assetList.filter(a => a.status.includes('Discharging')).reduce((sum, a) => sum + a.power_kw, 0) / 1000;
+            const allAssets = [...assets.homeowner, ...assets.commercial, ...assets.industrial];
+            const homeDispatch = getDispatchPower(assets.homeowner);
+            const commDispatch = getDispatchPower(assets.commercial);
+            const indDispatch = getDispatchPower(assets.industrial);
+            const solarGeneration = 0;
+            const totalSupply = solarGeneration + totalBatteryPower;
+            const gridStatusColor = gridBalance >= 0 ? 'text-[#39FF14]' : 'text-red-500';
+
+            return (<>
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <KpiCard title="Live Grid Status (MP)" icon={ICONS.grid}><div className="text-center p-4"><p className={`text-5xl font-bold font-mono ${gridStatusColor}`}>{gridStatus}</p><p className="text-lg text-gray-400">Grid needs {(-gridBalance).toFixed(2)} MW</p></div><div className="grid grid-cols-2 gap-4 mt-2 border-t border-gray-800 pt-4"><Metric label="Total Demand" value={`${gridDemand.toFixed(2)} MW`} color="text-red-400" /><Metric label="Total Supply" value={`${totalSupply.toFixed(2)} MW`} color="text-[#39FF14]" /><Metric label="Solar Generation" value={`${solarGeneration.toFixed(2)} MW`} /><Metric label="Battery Dispatch" value={`${totalBatteryPower.toFixed(2)} MW`} /></div></KpiCard>
+                        <KpiCard title="Aggregated Fleet Operations" icon={ICONS.assets}><div className="grid grid-cols-2 gap-4 p-2"><Metric label="Total Assets" value={allAssets.length} /><Metric label="Avg. SoC" value={`${(allAssets.reduce((s,a)=>s+a.soc,0)/allAssets.length).toFixed(1)}%`} /><Metric label="Discharging" value={allAssets.filter(a=>a.status.includes('Discharging')).length} color="text-cyan-400" /><Metric label="Grid Support" value={allAssets.filter(a=>a.status.includes('Support')).length} color="text-yellow-400" /><Metric label="Charging" value={allAssets.filter(a=>a.status.includes('Charging')).length} /><Metric label="Idle" value={allAssets.filter(a=>a.status.includes('Idle')).length} /></div></KpiCard>
+                    </div>
+                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <KpiCard title="Live Fleet Dispatch (kWh)" icon={ICONS.bolt}><div className="p-2 space-y-4"><Metric label="Homeowners" value={(homeDispatch*1000).toFixed(1)} color="text-cyan-400" /><Metric label="Commercial" value={(commDispatch*1000).toFixed(1)} color="text-cyan-400" /><Metric label="Industrial" value={(indDispatch*1000).toFixed(1)} color="text-cyan-400" /><div className="pt-2 border-t border-gray-700"><Metric label="Total Dispatch" value={`${totalBatteryPower.toFixed(2)} MW`} color="text-[#39FF14]"/></div></div></KpiCard>
+                        <KpiCard title="IEX Market Overview" icon={ICONS.dashboard}><div className="grid grid-cols-3 gap-4 p-2"><Metric label="RTM Price" value={`₹${market.rtm.toFixed(2)}`} color="text-red-400" small/><Metric label="ACP" value={`₹${market.acp.toFixed(2)}`} small/><Metric label="Volume (MW)" value={market.volume.toFixed(0)} small/></div></KpiCard>
+                    </div>
+                </div>
+            </>);
+        }
+
+        function GridServicesView({ gridStatus, assets, market }) { 
+            const[f,sF]=React.useState([]);
+            React.useEffect(()=>{
+                const i=setInterval(()=>{
+                    sF(p=>{
+                        let baseFreq = 50.0;
+                        if(gridStatus === 'DEFICIT') baseFreq = 49.92;
+                        else if (gridStatus === 'SURPLUS') baseFreq = 50.08;
+                        const newPoint = {time:new Date(),value: baseFreq + (Math.random() - 0.5) * 0.05};
+                        return[...p,newPoint].slice(-50)
+                    })
+                },1000);
+                return()=>clearInterval(i)
+            },[gridStatus]);
+            
+            const allAssets = [...assets.homeowner, ...assets.commercial, ...assets.industrial];
+            const fcasCapacityKW = allAssets.filter(a => a.status === 'Grid Support').reduce((s,a) => s + a.power_kw, 0);
+            const fcasRevenuePerHour = fcasCapacityKW * market.fcas_rate;
+
+            const lF=f.length>0?f[f.length-1].value:50;
+            const iS=lF>=49.95&&lF<=50.05;
+            const F=lF<49.95?'Discharging to Support':(lF>50.05?'Charging to Stabilize':'Monitoring');
+            const aC=lF<49.95?'text-cyan-400':(lF>50.05?'text-[#39FF14]':'text-gray-400');
+            return(<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full"><div className="lg:col-span-2 bg-black/50 border border-[#69F9D6]/20 rounded-lg p-4 flex flex-col"><h3 className="text-lg font-semibold text-white mb-2">Live Grid Frequency Response</h3><div className="flex-1" style={{aspectRatio: '16/9'}}><FrequencyChart data={f}/></div></div><div className="space-y-6"><KpiCard title="Current Frequency"><div className={`text-5xl font-mono ${iS?'text-[#39FF14]':'text-yellow-400'}`}>{lF.toFixed(3)} Hz</div></KpiCard><KpiCard title="Fleet Response"><div className={`text-3xl font-semibold ${aC}`}>{F}</div><p className="text-sm text-gray-500 mt-2">{allAssets.filter(a=>a.status === 'Grid Support').length} Assets in FCAS</p></KpiCard><KpiCard title="Ancillary Services"><Metric label="FCAS Deployed" value={`${fcasCapacityKW.toFixed(1)} kW`} color="text-yellow-400"/><Metric label="FCAS Revenue" value={`₹${fcasRevenuePerHour.toFixed(2)}/hr`}/></KpiCard></div></div>); 
+        }
+        function AssetsView({ assets }) { 
+            const[aT,sAT]=React.useState('Homeowner');
+            const t=[{n:'Homeowner',i:ICONS.home,d:assets.homeowner},{n:'Commercial',i:ICONS.business,d:assets.commercial},{n:'Industrial',i:ICONS.factory,d:assets.industrial}];
+            const aD=t.find(i=>i.n===aT).d;
+            const gSC=s=>{if(s.includes('Charging'))return'border-[#39FF14] text-[#39FF14]';if(s.includes('Discharging'))return'border-cyan-500 text-cyan-400';if(s.includes('Support'))return'border-yellow-500 text-yellow-400';return'border-gray-600 text-gray-400'};
+            return(<div className="flex flex-col h-full">
+                <div className="flex items-center border-b border-[#69F9D6]/20 mb-4">{t.map(i=>(<button key={i.n} onClick={()=>sAT(i.n)} className={`flex items-center px-4 py-3 text-sm font-medium transition-colors ${aT===i.n?'border-b-2 border-[#69F9D6] text-white':'text-gray-400 hover:text-white'}`}><Icon path={i.i} className="w-5 h-5 mr-2"/>{i.n} ({i.d.length})</button>))}</div>
+                <div className="flex-1 overflow-y-auto pr-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+                        {aD.map(a=>(<div key={a.id} className="bg-gray-900/80 border border-gray-800 rounded-lg p-4 space-y-3 hover:border-[#69F9D6]/50 transition-colors">
+                            <div className="flex justify-between items-start"><div><p className="font-mono text-sm text-white">{a.id}</p><p className="text-xs text-gray-400">{a.loc}</p></div><span className={`text-xs px-2 py-0.5 border rounded-full ${gSC(a.status)}`}>{a.status}</span></div>
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-xs text-gray-400"><span>SoC: {a.soc.toFixed(1)}%</span><span>{a.current_energy_kwh.toFixed(1)} / {a.max_capacity_kwh} kWh</span></div>
+                                <div className="w-full bg-gray-700 rounded-full h-2"><div className="bg-[#39FF14] h-2 rounded-full" style={{width:`${a.soc}%`}}></div></div>
+                            </div>
+                            <div className="pt-2 border-t border-gray-800 text-center"><Metric label="Live Power" value={`${a.power_kw.toFixed(1)} kW`} small/></div>
+                        </div>))}
+                    </div>
+                </div>
+            </div>); 
+        }
+        function MapView({ assets }) { const aA=[...assets.homeowner,...assets.commercial,...assets.industrial];const mC={lat:22.7196,lng:75.8577};const gSC=s=>{if(s.includes('Charging'))return'bg-[#39FF14]';if(s.includes('Discharging'))return'bg-cyan-500';if(s.includes('Support'))return'bg-yellow-500';return'bg-gray-500'};return(<div className="flex h-full gap-6"><div className="flex-1 bg-black border border-[#69F9D6]/20 rounded-lg p-4 relative overflow-hidden"><div className="absolute inset-0 z-0"><img src="https://i.imgur.com/8O8E5b2.png" alt="Map of Indore" className="w-full h-full object-cover opacity-10"/></div><div className="relative z-10 w-full h-full">{aA.map(a=>{const top=50-((a.lat-mC.lat)*1000);const left=50+((a.lng-mC.lng)*800);return(<div key={a.id} className="absolute group" style={{top:`${top}%`,left:`${left}%`}}><div className={`w-3 h-3 rounded-full ${gSC(a.status)} transition-transform group-hover:scale-150`}></div><div className="hidden group-hover:block absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-max bg-gray-900 text-xs rounded py-1 px-2 border border-gray-600"><p className="font-bold">{a.id}</p><p>{a.loc}</p><p className="font-mono">{a.status}</p></div></div>)})}</div></div><div className="w-96 space-y-6"><KpiCard title="Regional Fleet Summary"><Metric label="Assets in Indore" value={aA.length}/><Metric label="V2G Export" value={`${(aA.filter(a=>a.status.includes('Discharging')).reduce((s,a)=>s+a.power_kw,0)/1000).toFixed(2)} MW`} color="text-cyan-400"/><Metric label="Peak Demand Area" value="Vijay Nagar"/></KpiCard><KpiCard title="Live Asset Status"><div className="space-y-2 mt-2"><LegendItem color="bg-cyan-500" label="Discharging (V2G)" count={aA.filter(a=>a.status.includes('Discharging')).length}/><LegendItem color="bg-[#39FF14]" label="Smart Charging" count={aA.filter(a=>a.status.includes('Charging')).length}/><LegendItem color="bg-yellow-500" label="Grid Support" count={aA.filter(a=>a.status.includes('Support')).length}/><LegendItem color="bg-gray-500" label="Idle" count={aA.filter(a=>a.status.includes('Idle')).length}/></div></KpiCard></div></div>); }
+        function StrategyView() { 
+            return(<>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2 space-y-6">
+                        <KpiCard title="Market Participation" icon={ICONS.dashboard}>
+                            <div className="grid grid-cols-3 gap-4 p-4">
+                                <ToggleButton label="Day-Ahead Market" isActive={true}/>
+                                <ToggleButton label="Real-Time Market" isActive={true}/>
+                                <ToggleButton label="Frequency Support" isActive={true}/>
+                            </div>
+                             <div className="p-4 border-t border-gray-800 space-y-3 text-xs text-gray-400">
+                                <p><strong className="text-white">Day-Ahead Market (DAM):</strong> Bids are placed for the next day, based on demand and price forecasts. Good for baseline scheduling.</p>
+                                <p><strong className="text-white">Real-Time Market (RTM):</strong> A near-live market to manage unexpected changes in demand or supply. Higher potential for profit and volatility.</p>
+                                <p><strong className="text-white">Frequency Support (FCAS):</strong> A service paid by the grid operator for assets to be on standby to stabilize grid frequency. Provides a steady revenue stream.</p>
+                            </div>
+                        </KpiCard>
+                        <KpiCard title="Asset Class Strategy" icon={ICONS.assets}><StrategyProfile icon={ICONS.home} title="Homeowner Fleet" description="Prioritize savings. Discharge during high-profit RTM peaks, maintain min 40% SoC."/><StrategyProfile icon={ICONS.business} title="Commercial Fleet" description="Balance site demand with market opportunities. Use V2G to offset peak charges."/><StrategyProfile icon={ICONS.factory} title="Industrial Fleet" description="Maximize revenue. Aggressive participation in all markets, including FCAS. Min SoC 20%."/></KpiCard>
+                    </div>
+                    <div className="space-y-6">
+                         <KpiCard title="Fleet Risk Parameters" icon={ICONS.strategy}>
+                            <div>
+                                <h3 className="font-bold text-white mb-2">Homeowners</h3>
+                                <RangeSlider label="Min. SoC" value={40} minLabel="0%" maxLabel="100%"/>
+                                <RangeSlider label="Max Daily Cycles" value={1} minLabel="0" maxLabel="5"/>
+                            </div>
+                            <div className="border-t border-gray-800 pt-4 mt-4">
+                                <h3 className="font-bold text-white mb-2">Commercial</h3>
+                                <RangeSlider label="Min. SoC" value={30} minLabel="0%" maxLabel="100%"/>
+                                <RangeSlider label="Max Daily Cycles" value={2} minLabel="0" maxLabel="5"/>
+                            </div>
+                            <div className="border-t border-gray-800 pt-4 mt-4">
+                                <h3 className="font-bold text-white mb-2">Industrial</h3>
+                                <RangeSlider label="Min. SoC" value={20} minLabel="0%" maxLabel="100%"/>
+                                <RangeSlider label="Max Daily Cycles" value={3} minLabel="0" maxLabel="5"/>
+                            </div>
+                         </KpiCard>
+                    </div>
+                </div>
+            </>); 
+        }
+        function ReportsView({ assets, totalBatteryPower, market, gridDemand, gridStatus }) { 
+            const [revenueHistory, setRevenueHistory] = React.useState(() => Array(120).fill({ time: Date.now(), arbitrage: 0, fcas: 0, demandResponse: 0, total: 0 }));
+            const [drState, setDrState] = React.useState({active: false, startTime: 0});
+            
+            React.useEffect(() => {
+                const revenueCalculator = setInterval(() => {
+                    let isDrActiveNow = drState.active;
+                    if (!drState.active && gridDemand > 3300 && gridStatus === 'DEFICIT') {
+                        setDrState({active: true, startTime: Date.now()});
+                        isDrActiveNow = true;
+                    }
+
+                    if (drState.active && Date.now() - drState.startTime > 15 * 60 * 1000) {
+                         setDrState({active: false, startTime: 0});
+                         isDrActiveNow = false;
+                    }
+
+                    const AVERAGE_CHARGING_PRICE = 2.50; // ₹/kWh
+                    const DEMAND_RESPONSE_PREMIUM = 10.00; // ₹/kWh
+                    const energyDischargedKWh_per_second = (totalBatteryPower * 1000) / 3600;
+
+                    let arbitrageProfit = 0;
+                    let demandResponsePayment = 0;
+
+                    if(isDrActiveNow) {
+                        demandResponsePayment = energyDischargedKWh_per_second * DEMAND_RESPONSE_PREMIUM;
+                    } else {
+                        arbitrageProfit = energyDischargedKWh_per_second * (market.rtm - AVERAGE_CHARGING_PRICE);
+                    }
+                    
+                    const allAssets = [...assets.homeowner, ...assets.commercial, ...assets.industrial];
+                    const fcasCapacityKW = allAssets.filter(a => a.status === 'Grid Support').reduce((s,a) => s + a.power_kw, 0);
+                    const fcasPayment_per_second = (fcasCapacityKW * market.fcas_rate) / 3600;
+
+                    setRevenueHistory(prev => {
+                        const last = prev[prev.length -1] || { time: Date.now(), arbitrage: 0, fcas: 0, demandResponse: 0, total: 0 };
+                        const newEntry = {
+                            time: Date.now(),
+                            arbitrage: last.arbitrage + arbitrageProfit,
+                            fcas: last.fcas + fcasPayment_per_second,
+                            demandResponse: last.demandResponse + demandResponsePayment,
+                            total: last.total + arbitrageProfit + fcasPayment_per_second + demandResponsePayment
+                        };
+                        return [...prev, newEntry].slice(-120);
+                    });
+
+                }, 1000);
+                return () => clearInterval(revenueCalculator);
+            }, [assets, totalBatteryPower, market, drState.active, gridDemand, gridStatus]);
+
+            const allAssets=[...assets.homeowner,...assets.commercial,...assets.industrial];
+            const latestRevenue = revenueHistory[revenueHistory.length -1] || {arbitrage: 0, fcas: 0, demandResponse: 0};
+
+            return(<>
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <KpiCard title="P&L Breakdown (Live)"><LineChart data={revenueHistory}/></KpiCard>
+                        <KpiCard title="Live Revenue Calculation">
+                            <div className="space-y-4 p-2 text-sm">
+                                <div>
+                                    <p className="font-bold text-white">1. Energy Arbitrage</p>
+                                    <p className="font-mono text-gray-400 text-xs">{`${(totalBatteryPower * 1000).toFixed(1)} kW * (₹${market.rtm.toFixed(2)} - ₹2.50)/kWh = ₹${(totalBatteryPower * 1000 * (market.rtm - 2.50)).toFixed(2)}/hr`}</p>
+                                </div>
+                                <div>
+                                    <p className="font-bold text-white">2. FCAS</p>
+                                    <p className="font-mono text-gray-400 text-xs">{`${(allAssets.filter(a=>a.status.includes('Support')).reduce((s,a)=>s+a.power_kw,0)).toFixed(1)} kW * ₹${market.fcas_rate.toFixed(2)}/kWh = ₹${((allAssets.filter(a=>a.status.includes('Support')).reduce((s,a)=>s+a.power_kw,0)) * market.fcas_rate).toFixed(2)}/hr`}</p>
+                                </div>
+                                 <div>
+                                    <p className="font-bold text-white">3. Demand Response</p>
+                                    <p className="font-mono text-gray-400 text-xs">Event-based premium. {drState.active && <span className="text-green-400 animate-pulse"> (ACTIVE @ ₹10/kWh)</span>}</p>
+                                </div>
+                            </div>
+                        </KpiCard>
+                    </div>
+                    <KpiCard title="Live Asset Performance"><div className="overflow-x-auto h-96"><table className="w-full text-sm text-left text-gray-400">
+                        <thead className="text-xs text-gray-400 uppercase bg-gray-900 sticky top-0"><tr><th scope="col" className="px-6 py-3">Asset ID</th><th scope="col" className="px-6 py-3">Type</th><th scope="col" className="px-6 py-3">Uptime</th><th scope="col" className="px-6 py-3">Cycles (24h)</th><th scope="col" className="px-6 py-3">Status</th></tr></thead>
+                        <tbody>{allAssets.map(a=>(<tr key={a.id} className="bg-black border-b border-gray-800 hover:bg-gray-900"><th scope="row" className="px-6 py-4 font-mono text-white whitespace-nowrap">{a.id}</th><td className="px-6 py-4">{a.type}</td><td className="px-6 py-4">{a.uptime.toFixed(2)}%</td><td className="px-6 py-4">{a.cycles}</td><td className="px-6 py-4">{a.status}</td></tr>))}</tbody>
+                    </table></div></KpiCard>
+                </div>
+            </>); 
+        }
+
+        // --- UI Helper Components ---
+        function AIModal({ isOpen, onClose, title, isLoading, content }) { if(!isOpen)return null;return(<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center" onClick={onClose}><div className="bg-gray-900 border border-[#69F9D6]/30 rounded-lg shadow-xl w-full max-w-2xl text-gray-300 relative" onClick={e=>e.stopPropagation()}><div className="flex justify-between items-center p-4 border-b border-gray-800"><h3 className="text-lg font-semibold flex items-center gap-2"><Icon path={ICONS.sparkles} className="text-[#69F9D6]"/> {title}</h3><button onClick={onClose} className="text-gray-400 hover:text-white"><Icon path={ICONS.close}/></button></div><div className="p-6 min-h-[200px]">{isLoading?(<div className="flex flex-col items-center justify-center h-full"><div className="w-8 h-8 border-4 border-t-transparent border-[#69F9D6] rounded-full animate-spin"></div><p className="mt-4 text-gray-400">Generating insights...</p></div>):(<div className="prose prose-invert prose-sm max-w-none prose-p:text-gray-300 prose-headings:text-white" dangerouslySetInnerHTML={{__html:content.replace(/- /g,'• ').replace(/\n/g,'<br/>')}}></div>)}</div></div></div>); }
+        function KpiCard({ title, icon, children, className }) { return ( <div className={`bg-black/50 border border-[#69F9D6]/20 rounded-lg p-4 ${className}`}><div className="flex items-center text-gray-400">{icon && <Icon path={icon} className="w-5 h-5 mr-2" />}<h4 className="text-sm font-semibold uppercase tracking-wider">{title}</h4></div><div className="mt-2">{children}</div></div> ); }
+        function Metric({ label, value, color = "text-white", trend, small=false }) { return ( <div className={small ? '' : 'py-1'}><p className={`text-xs ${small ? 'mb-0' : 'mb-1'} text-gray-400`}>{label}</p><div className="flex items-center space-x-2"><p className={`${small ? 'text-lg' : 'text-xl'} font-semibold ${color}`}>{value}</p>{trend && <Icon path={trend === 'up' ? ICONS.up : ICONS.down} className={`w-5 h-5 ${trend === 'up' ? 'text-green-500' : 'text-red-500'}`} />}</div></div> ); }
+        function FrequencyChart({ data }) { const w=800,h=300,yMin=49.8,yMax=50.2;if(data.length<2)return<div className="text-gray-500 text-center pt-20">Awaiting...</div>;const xR=data[data.length-1].time-data[0].time;const p=data.map(d=>{const x=((d.time-data[0].time)/xR)*w;const y=h-((d.value-yMin)/(yMax-yMin))*h;return`${x},${y}`}).join(' ');const gY=v=>h-((v-yMin)/(yMax-yMin))*h;return(<svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" preserveAspectRatio="xMidYMid meet"><rect x="0" y={gY(50.05)} width={w} height={gY(49.95)-gY(50.05)} fill="#39FF14" opacity="0.1"/><rect x="0" y={gY(50.1)} width={w} height={gY(50.05)-gY(50.1)} fill="#F97316" opacity="0.1"/><rect x="0" y={gY(49.95)} width={w} height={gY(49.90)-gY(49.95)} fill="#F97316" opacity="0.1"/><line x1="0" y1={gY(50)} x2={w} y2={gY(50)} stroke="#4b5563" strokeDasharray="4" strokeWidth="1"/><text x={w-5} y={gY(50)-5} fill="#4b5563" textAnchor="end" fontSize="12">50.00 Hz</text><polyline points={p} fill="none" stroke="#69F9D6" strokeWidth="2"/></svg>); }
+        function LegendItem({ color, label, count }) { return(<div className="flex items-center justify-between text-sm"><div className="flex items-center"><div className={`w-3 h-3 rounded-full mr-2 ${color}`}></div><span className="text-gray-300">{label}</span></div><span className="font-mono text-white">{count}</span></div>); }
+        function ToggleButton({ label, isActive }) { const[on,sO]=React.useState(isActive);return(<div className="text-center"><p className="text-sm font-medium mb-2">{label}</p><button onClick={()=>sO(!on)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${on?'bg-[#69F9D6]':'bg-gray-700'}`}><span className={`inline-block h-4 w-4 transform rounded-full bg-black transition-transform ${on?'translate-x-6':'translate-x-1'}`}/></button></div>); }
+        function StrategyProfile({ icon, title, description }) { return(<div className="flex items-start p-4 border-t border-gray-800"><Icon path={icon} className="w-8 h-8 text-[#69F9D6] mt-1 mr-4 flex-shrink-0"/><div><h5 className="font-semibold text-white">{title}</h5><p className="text-sm text-gray-400">{description}</p></div></div>); }
+        function RangeSlider({ label, value, minLabel, maxLabel }) { return(<div className="my-2"><label className="block text-xs font-medium text-gray-300 mb-1">{label}</label><input type="range" min="0" max="100" defaultValue={value} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg accent-[#69F9D6]"/><div className="flex justify-between text-xs text-gray-500"><span>{minLabel}</span><span>{maxLabel}</span></div></div>); }
+        function LineChart({ data }) {
+            const w = 800, h = 300;
+            const latestRevenue = data[data.length -1] || {arbitrage: 0, fcas: 0, demandResponse: 0, total: 0};
+
+            const maxVal = Math.max(1, latestRevenue.total);
+            
+            const getPoints = (key) => data.map((d,i) => `${(i / (data.length -1)) * w},${h - (d[key] / maxVal) * h}`).join(' ');
+
+            return (
+                <div className="relative h-full">
+                    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" preserveAspectRatio="none">
+                        <polyline points={getPoints('arbitrage')} fill="none" stroke="#22d3ee" strokeWidth="2" />
+                        <polyline points={getPoints('fcas')} fill="none" stroke="#facc15" strokeWidth="2" />
+                        <polyline points={getPoints('demandResponse')} fill="none" stroke="#39FF14" strokeWidth="2" />
+                    </svg>
+                     <div className="absolute top-2 right-2 text-xs text-gray-400 space-y-1 bg-black/50 p-2 rounded">
+                        <div className="flex items-center"><div className="w-3 h-3 bg-cyan-400 mr-2"></div>Arbitrage: ₹{latestRevenue.arbitrage.toFixed(2)}</div>
+                        <div className="flex items-center"><div className="w-3 h-3 bg-yellow-400 mr-2"></div>FCAS: ₹{latestRevenue.fcas.toFixed(2)}</div>
+                        <div className="flex items-center"><div className="w-3 h-3 bg-[#39FF14] mr-2"></div>DR: ₹{latestRevenue.demandResponse.toFixed(2)}</div>
+                        <div className="border-t border-gray-600 pt-1 mt-1 font-bold text-white">Total: ₹{latestRevenue.total.toFixed(2)}</div>
+                    </div>
+                </div>
+            );
+        }
+        
+        // --- Mount the App ---
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
+
