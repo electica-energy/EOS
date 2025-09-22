@@ -40,6 +40,7 @@
             map: "M20.5 3l-6.5 18-3.5-7L1 10.5 20.5 3z",
             assets: "M17 1H7c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14zM8 6h8v2H8z",
             grid: "M20 5H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zM4 17V7h16v10H4zm9-9h-2v8h2V8zm4 0h-2v8h2V8zM7 8H5v8h2V8z",
+            gridservices: "M18 20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2H0v2h24v-2h-6zM6 18V6h12v12H6zm2-8h2v2H8zm4 0h2v2h-2zm4 0h2v2h-2z",
             strategy: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z",
             reports: "M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z",
             logout: "M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z",
@@ -192,7 +193,17 @@
         }
 
         // --- Layout Components ---
-        function Sidebar({ activePage, setActivePage, onLogout }) { const n=['Dashboard','Grid Services','Assets','Map','Strategy','Reports'];return(<aside className="bg-black w-20 lg:w-64 flex flex-col border-r border-[#69F9D6]/20"><a href="https://www.electica.in/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center lg:justify-start lg:pl-6 h-20 border-b border-[#69F9D6]/20"><img src="Logo -02.png" alt="Electica Logo" className="h-16 w-auto"/></a><nav className="flex-1 px-2 lg:px-4 py-6 space-y-2">{n.map(i=>(<NavItem key={i} label={i} icon={ICONS[i.toLowerCase().replace(' ','')]} isActive={activePage===i} onClick={()=>setActivePage(i)}/>))}</nav><div className="px-2 lg:px-4 py-6 border-t border-[#69F9D6]/20"><NavItem label="Logout" icon={ICONS.logout} onClick={onLogout} /></div></aside>); }
+        function Sidebar({ activePage, setActivePage, onLogout }) { 
+            const navItems = [
+                { label: 'Dashboard', key: 'dashboard' },
+                { label: 'Grid Services', key: 'gridservices' },
+                { label: 'Assets', key: 'assets' },
+                { label: 'Map', key: 'map' },
+                { label: 'Strategy', key: 'strategy' },
+                { label: 'Reports', key: 'reports' }
+            ];
+            return(<aside className="bg-black w-20 lg:w-64 flex flex-col border-r border-[#69F9D6]/20"><a href="https://www.electica.in/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center lg:justify-start lg:pl-6 h-20 border-b border-[#69F9D6]/20"><img src="Logo -02.png" alt="Electica Logo" className="h-16 w-auto"/></a><nav className="flex-1 px-2 lg:px-4 py-6 space-y-2">{navItems.map(i=>(<NavItem key={i.label} label={i.label} icon={ICONS[i.key]} isActive={activePage===i.label} onClick={()=>setActivePage(i.label)}/>))}</nav><div className="px-2 lg:px-4 py-6 border-t border-[#69F9D6]/20"><NavItem label="Logout" icon={ICONS.logout} onClick={onLogout} /></div></aside>); 
+        }
         function NavItem({ label, icon, isActive, onClick = () => {} }) { return(<a href="#" onClick={e=>{e.preventDefault();onClick();}} className={`flex items-center justify-center lg:justify-start p-3 rounded-lg transition-all duration-200 ease-in-out group ${isActive?'bg-[#69F9D6]/10 text-[#69F9D6]':'text-gray-400 hover:bg-gray-800 hover:text-white'}`}><Icon path={icon} className="w-6 h-6"/><span className="hidden lg:block ml-4 font-medium">{label}</span></a>); }
         function Header({ currentTime }) { const t=currentTime.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'Asia/Kolkata'});const d=currentTime.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Kolkata'});return(<header className="flex-shrink-0 bg-black/80 backdrop-blur-sm flex justify-between items-center h-20 px-6 border-b border-[#69F9D6]/20"><div><h2 className="text-xl font-semibold text-white">ElecticaOS</h2><p className="text-xs text-gray-500">Indore, Madhya Pradesh, India</p></div><div className="flex items-center space-x-6"><div className="text-right"><p className="font-mono text-lg text-white">{t} IST</p><p className="text-xs text-gray-500">{d}</p></div><div className="flex items-center space-x-2 px-3 py-1 bg-[#39FF14]/10 border border-[#39FF14]/30 rounded-full"><div className="relative flex h-3 w-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#39FF14] opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-[#39FF14]"></span></div><span className="font-semibold text-sm text-[#39FF14]">SYSTEM ONLINE</span></div></div></header>); }
 
@@ -351,7 +362,7 @@
                             demandResponse: last.demandResponse + demandResponsePayment,
                             total: last.total + arbitrageProfit + fcasPayment_per_second + demandResponsePayment
                         };
-                        return [...prev, newEntry].slice(-120); // Keep last 120 seconds of data
+                        return [...prev, newEntry].slice(-120);
                     });
 
                 }, 1000);
