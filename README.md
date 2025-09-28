@@ -5,8 +5,11 @@ The simulation is split into two distinct versions, showcasing the evolution fro
 
 Live Demos
 Version 1.0 - Live Monitoring Dashboard
+https://eos-pied.vercel.app/
+Username: a
+Password: a
 Version 2.0 - Predictive Control Platform
-(Note: You will need to replace the placeholder URLs above with your actual GitHub Pages links after deployment.)
+
 
 Key Features
 
