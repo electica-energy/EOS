@@ -8,7 +8,7 @@ Version 1.0 - Live Monitoring Dashboard
 
 https://eos-pied.vercel.app/
 
-Username: a
+Username: a,
 Password: a
 
 Version 2.0 - Predictive Control Platform
