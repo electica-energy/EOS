@@ -15,7 +15,6 @@ Version 2.0 - Predictive Control Platform
 Key Features
 
 Version 1.0: Live Monitoring Dashboard
-
 Real-Time Grid Monitoring: Displays live grid status (Surplus/Deficit), total demand, and total supply from the distributed battery fleet.
 Dynamic Asset Tracking: Simulates a fleet of Homeowner, Commercial, and Industrial batteries with continuously updating State of Charge (SoC) and power output based on their status (Charging, Discharging, Grid Support, Idle).
 Live P&L Analysis: Features a continuous, multi-line chart that plots accumulating revenue from Arbitrage, FCAS, and Demand Response second-by-second. Includes a transparent breakdown of the live calculation rates.
