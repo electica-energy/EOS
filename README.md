@@ -45,16 +45,4 @@ Visualizations: Chart.js for P&L and forecast charts
 
 Deployment: Packaged as single, self-contained HTML files that require no build step or server.
 
-**How to Run Locally**
-
-No server or build process is required.
-
-_Clone the Repository:_
-
-_git clone [https://github.com/your-username/electica-os.git](https://github.com/your-username/electica-os.git)_
-
-
-Navigate to Directory:
-cd electica-os
-
 
